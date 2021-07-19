@@ -3,9 +3,9 @@ It consist of using big data tools to answer questions about datasets from Wikip
 
 
 # Technologies
--Hadoop MapReduce
--YARN
--HDFS
+- Hadoop MapReduce
+- YARN
+- HDFS
 -Python
 -Hive
 -Git + GitHub
