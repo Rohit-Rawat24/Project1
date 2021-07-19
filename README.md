@@ -6,6 +6,6 @@ It consist of using big data tools to answer questions about datasets from Wikip
 - Hadoop MapReduce
 - YARN
 - HDFS
--Python
--Hive
--Git + GitHub
+- Python
+- Hive
+- Git + GitHub
