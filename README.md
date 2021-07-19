@@ -2,10 +2,10 @@
 It consist of using big data tools to answer questions about datasets from Wikipedia.
 
 
-#Technologies
+# Technologies
 -Hadoop MapReduce
 -YARN
 -HDFS
--Scala 2.13
+-Python
 -Hive
 -Git + GitHub
