@@ -15,5 +15,5 @@ This analysis consists of using big data tools to answer questions about dataset
 - Determine relative popularity of page access methods.
 
 # Usage
--The HQL commands can be used on similar large datasets, specifically those found in Wikipedia dumps - https://dumps.wikimedia.org/
--This script was designed to answer all sorts of questions pertaining to big data.
+- The HQL commands can be used on similar large datasets, specifically those found in Wikipedia dumps - https://dumps.wikimedia.org/
+- This script was designed to answer all sorts of questions pertaining to big data.
