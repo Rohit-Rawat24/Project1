@@ -1,4 +1,4 @@
--- Most Views
+-- 1. Which English wikipedia article got the most traffic on January 20, 2021? 
 CREATE EXTERNAL TABLE IF NOT EXISTS data (
 	lang STRING,
 	page STRING,
@@ -26,10 +26,11 @@ WHERE page != 'Main_Page' AND page != 'Special:Search' AND page != '-';
 
 SELECT * FROM total_en_pageviews
 WHERE total_views > 10000
-ORDER BY total_views DESC;
+ORDER BY total_views DESC limit20;
 
 
---
+-- 2. What English wikipedia article has the largest fraction of its readers follow an internal link to another wikipedia article?
+
 CREATE EXTERNAL TABLE IF NOT EXISTS april_pageviews (
 	lang STRING,
 	page STRING,
@@ -106,4 +107,63 @@ AS SELECT * FROM final_clickstream WHERE daily_clickstream > 199 ORDER BY daily_
 
 SELECT c.prev, c.daily_clickstream, v.total_views, ROUND((c.daily_clickstream / v.total_views), 4)
 AS fraction FROM join_clickstream c INNER JOIN q2_views v 
-ON (c.prev = v.page);
+ON (c.prev = v.page) limit 20;
+
+-- 3. What series of wikipedia articles, starting with [Hotel California](https://en.wikipedia.org/wiki/Hotel_California), keeps the largest fraction of its readers clicking on internal links?  This is similar to (2), but you should continue the analysis past the first article.  There are multiple ways you can count this fraction, be careful to be clear about the method you find most appropriate.
+
+CREATE TABLE IF NOT EXISTS hc_clickstream
+AS SELECT prev, ROUND((occ / 30), 4) 
+AS daily_cickstream FROM internal_links 
+WHERE prev = 'Hotel_California';
+
+SELECT v.page, c.curr, c.occ, v.total_views, ROUND((c.occ / v.total_views), 4)
+AS fraction FROM total_a_pageviews v INNER JOIN internal_links c
+ON (v.page = c.prev) WHERE c.prev = 'Hotel_California'
+AND c.curr != 'Hotel_California_(Eagles_album)' AND c.curr != 'Eagles_(band)' LIMIT 20;
+
+SELECT v.page, c.curr, c.occ, v.total_views, ROUND((c.occ / v.total_views), 4)
+AS fraction FROM total_a_pageviews v INNER JOIN internal_links c 
+ON (v.page = c.prev) WHERE c.prev = 'Don_Felder' LIMIT 20;
+
+SELECT v.page, c.curr, c.occ, v.total_views, ROUND((c.occ / v.total_views), 4)
+AS fraction FROM total_a_pageviews v INNER JOIN internal_links c 
+ON (v.page = c.prev) WHERE c.prev = 'On_the_Border'
+AND curr != 'One_of_These_Nights' AND curr != 'Desperado_(Eagles_album)' LIMIT 20;
+
+-- 4. Find an example of an English wikipedia article that is relatively more popular in the Americas than elsewhere.
+
+CREATE TABLE IF NOT EXISTS en_am_views (
+	page STRING,
+	views INT)
+	PARTITIONED BY (lang STRING)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY '\t';
+
+INSERT INTO TABLE en_am_views PARTITION (lang = 'en')
+SELECT page, views FROM april_pageviews WHERE lang = 'en';
+
+CREATE TABLE IF NOT EXISTS total_am_views
+AS SELECT DISTINCT(page), SUM(views) OVER (PARTITION BY page ORDER BY page)
+AS total_views_am FROM en_am_views WHERE page != 'Main_Page' 
+AND page != 'Special:Search' AND page != '-';
+
+CREATE TABLE IF NOT EXISTS gm_de_views (
+	page STRING,
+	views INT)
+	PARTITIONED BY (lang STRING)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY '\t';
+
+INSERT INTO TABLE gm_de_views PARTITION (lang = 'de')
+SELECT page, views FROM gm_views WHERE lang = 'de';
+
+CREATE TABLE IF NOT EXISTS total_gm_views
+AS SELECT DISTINCT(page), SUM(views) OVER (PARTITION BY page ORDER BY page)
+AS total_views_gm FROM gm_de_views WHERE page != 'Main_Page'
+AND page != 'Special:Search' AND page != '-';
+
+SELECT a.page, a.total_views_am, g.total_views_gm FROM total_am_views a
+INNER JOIN total_gm_views g ON (a.page = g.page) LIMIT 20;
+
+SELECT a.page, a.total_views_am, g.total_views_gm FROM total_am_views a
+INNER JOIN total_gm_views g ON (a.page = g.page) ORDER BY a.total_views_am DESC LIMIT 20;
