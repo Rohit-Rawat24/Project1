@@ -1,0 +1,18 @@
+### QUERY FOR PROBLEM STATEMENT 1 : 
+      Create external table target (lang string, search string, visit int, deli int)
+      row format delimited
+      fields terminated by ' '
+      location "/tmp/project1_info";
+      ==========================================================================================
+      LOAD DATA INPATH '/tmp/formated_00.txt' INTO TABLE target;
+      (Here the above query for loading data file in the directory will be executed for 24 times 
+        as we have 24 data files for all the 24 hours data which is divided hourly)
+      ===========================================================================================
+      CREATE TABLE IF NOT EXISTS total_en_pageviews
+      AS SELECT DISTINCT(search), SUM(visit) OVER (PARTITION BY search ORDER BY search) 
+      AS total_views FROM target
+      WHERE search != 'Main_Page' AND search != 'Special:Search' AND search != '-';
+      ===========================================================================================
+      SELECT * FROM total_en_pageviews
+      WHERE total_views > 10000
+      ORDER BY total_views DESC limit 20;
